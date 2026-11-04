@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vegas VIP SpA · Lobby Principal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-main: #060305;
+  --bg-surface: #12070c;
+  --bg-card: #1c0b13;
+  --gold-prime: #f3cf7a;
+  --gold-light: #fff2cc;
+  --gold-dark: #b8860b;
+  --gold-grad: linear-gradient(135deg, #f3cf7a 0%, #c58a22 100%);
+  --accent-cyan: #22d3ee;
+  --text-main: #fcf8f2;
+  --text-muted: #ab9b9e;
+  --border-gold: rgba(243, 207, 122, 0.25);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; min-height: 100vh;
+  background: var(--bg-main); color: var(--text-main);
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Fondo inmersivo con resplandores */
+body::before {
+  content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at 10% 15%, rgba(120, 18, 42, 0.25) 0%, transparent 45%),
+              radial-gradient(circle at 90% 85%, rgba(243, 207, 122, 0.08) 0%, transparent 50%);
+  z-index: -1; pointer-events: none;
+}
+
+/* NAVBAR MODERNA */
+nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 48px; background: rgba(12, 5, 8, 0.85);
+  border-bottom: 1px solid var(--border-gold);
+  backdrop-filter: blur(14px); position: sticky; top: 0; z-index: 100;
+}
+
+.nav-brand {
+  display: flex; align-items: center; gap: 14px;
+}
+.brand-icon {
+  width: 42px; height: 42px; background: var(--gold-grad);
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; box-shadow: 0 4px 15px rgba(197, 138, 34, 0.3);
+}
+.brand-text h3 {
+  margin: 0; font-family: 'Playfair Display', serif; font-size: 20px;
+  background: linear-gradient(to right, #fff, var(--gold-prime));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.brand-text span { font-size: 11px; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; }
+
+.nav-actions { display: flex; align-items: center; gap: 20px; }
+.wallet-pill {
+  background: rgba(0, 0, 0, 0.5); border: 1px solid var(--border-gold);
+  padding: 8px 18px; border-radius: 14px; display: flex; flex-direction: column;
+}
+.wallet-pill span { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.wallet-pill b { font-size: 17px; font-variant-numeric: tabular-nums; color: var(--gold-prime); }
+
+.btn-deposit {
+  padding: 12px 24px; background: var(--gold-grad); color: #0f0508;
+  font-weight: 700; font-size: 14px; border: none; border-radius: 14px;
+  cursor: pointer; transition: all 0.25s ease; box-shadow: 0 4px 20px rgba(197, 138, 34, 0.3);
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-deposit:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(197, 138, 34, 0.5); }
+
+/* CONTENEDOR PRINCIPAL */
+main { max-width: 1300px; margin: 0 auto; padding: 48px 24px; display: flex; flex-direction: column; gap: 40px; }
+
+.hero-banner {
+  background: linear-gradient(135deg, rgba(28, 11, 19, 0.95), rgba(18, 7, 12, 0.8));
+  border: 1px solid var(--border-gold); border-radius: 28px; padding: 48px;
+  position: relative; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+.hero-banner::after {
+  content: '👑'; position: absolute; right: -20px; bottom: -30px; font-size: 180px; opacity: 0.05; pointer-events: none;
+}
+.hero-banner h1 {
+  margin: 0 0 10px 0; font-family: 'Playfair Display', serif; font-size: 38px;
+  color: var(--text-main); font-weight: 700;
+}
+.hero-banner p { margin: 0; color: var(--text-muted); font-size: 16px; max-width: 550px; line-height: 1.6; }
+
+/* SECCIÓN DE JUEGOS */
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.section-header h2 { margin: 0; font-size: 22px; font-family: 'Playfair Display', serif; color: var(--gold-prime); }
+
+.games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
+
+.game-card {
+  background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: 24px;
+  overflow: hidden; display: flex; flex-direction: column; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+.game-card:hover { transform: translateY(-8px); border-color: var(--gold-prime); box-shadow: 0 25px 50px rgba(197, 138, 34, 0.15); }
+
+.game-media {
+  height: 210px; background: radial-gradient(circle at center, #2d0e1b 0%, #100408 100%);
+  display: flex; align-items: center; justify-content: center; font-size: 72px;
+  position: relative; border-bottom: 1px solid var(--border-gold);
+}
+.game-tag {
+  position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.6);
+  border: 1px solid var(--border-gold); padding: 5px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 600; color: var(--gold-prime); letter-spacing: 1px;
+  backdrop-filter: blur(5px);
+}
+
+.game-body { padding: 28px; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+.game-body h3 { margin: 0; font-family: 'Playfair Display', serif; font-size: 24px; color: #fff; }
+.game-body p { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.6; flex: 1; }
+
+.btn-play-modern {
+  padding: 14px; background: rgba(34, 211, 238, 0.08); border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan); font-weight: 700; border-radius: 14px; text-align: center;
+  text-decoration: none; font-size: 15px; transition: all 0.25s ease;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-play-modern:hover { background: var(--accent-cyan); color: #060305; box-shadow: 0 0 20px rgba(34, 211, 238, 0.4); }
+
+/* MODAL / CAJERO VIP MODERNO */
+.modal-backdrop {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(4, 2, 3, 0.85); backdrop-filter: blur(12px);
+  display: none; align-items: center; justify-content: center; z-index: 1000;
+  animation: fadeIn 0.25s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-card {
+  background: var(--bg-surface); border: 1px solid var(--border-gold); border-radius: 28px;
+  width: 90%; max-width: 520px; padding: 40px; box-shadow: 0 40px 90px rgba(0,0,0,0.9);
+  display: flex; flex-direction: column; gap: 24px; position: relative;
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes scaleUp { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.modal-top { display: flex; justify-content: space-between; align-items: center; }
+.modal-top h2 { margin: 0; font-family: 'Playfair Display', serif; font-size: 24px; color: var(--gold-prime); }
+.modal-close {
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border-gold); color: #fff;
+  width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; transition: background 0.2s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.12); }
+
+.modal-nav { display: flex; gap: 10px; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 14px; border: 1px solid var(--border-gold); }
+.nav-tab {
+  flex: 1; background: transparent; border: none; color: var(--text-muted);
+  font-weight: 600; font-size: 13px; padding: 10px; border-radius: 10px; cursor: pointer; transition: all 0.2s;
+}
+.nav-tab.active { background: var(--bg-card); color: var(--gold-prime); border: 1px solid var(--border-gold); }
+
+.tab-panel { display: none; flex-direction: column; gap: 20px; }
+.tab-panel.active { display: flex; }
+
+.input-group { display: flex; flex-direction: column; gap: 8px; }
+.input-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); font-weight: 600; }
+.input-group select, .input-group input {
+  padding: 14px 18px; background: var(--bg-main); border: 1px solid var(--border-gold);
+  border-radius: 14px; color: #fff; font-family: inherit; font-size: 15px; outline: none; transition: border-color 0.2s;
+}
+.input-group select:focus, .input-group input:focus { border-color: var(--gold-prime); }
+
+.btn-submit-modal {
+  padding: 16px; background: var(--gold-grad); color: #0f0508; font-weight: 700;
+  border: none; border-radius: 14px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 20px rgba(197, 138, 34, 0.3);
+  transition: transform 0.1s; margin-top: 5px;
+}
+.btn-submit-modal:active { transform: scale(0.98); }
+
+.bank-card-view {
+  background: rgba(0,0,0,0.5); border: 1px solid var(--border-gold); border-radius: 16px;
+  padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px;
+}
+.bank-info b { display: block; color: var(--gold-prime); font-size: 15px; margin-bottom: 2px; }
+.bank-info span { font-size: 13px; color: var(--text-muted); }
+
+.status-msg { font-size: 13px; text-align: center; min-height: 20px; color: var(--accent-cyan); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="brand-icon">💎</div>
+    <div class="brand-text">
+      <h3>Vegas VIP SpA</h3>
+      <span>Plataforma Certificada</span>
+    </div>
+  </div>
+  <div class="nav-actions">
+    <div class="wallet-pill">
+      <span>Saldo Activo</span>
+      <b id="user-bal">150.000 CLP</b>
+    </div>
+    <button class="btn-deposit" onclick="toggleModal(true)">
+      <span>💳</span> Cajero / Retiros
+    </button>
+  </div>
+</nav>
+
+<main>
+  <div class="hero-banner">
+    <h1>Salón de Juegos Exclusivo</h1>
+    <p>Experimenta tecnología de juego de alta precisión con motor matemático seguro y cumplimiento fiscal estricto para Chile.</p>
+  </div>
+
+  <div>
+    <div class="section-header">
+      <h2>Tragamonedas Disponibles</h2>
+    </div>
+    <div class="games-grid">
+      <!-- JUEGO 1 -->
+      <div class="game-card">
+        <div class="game-tag">DESTACADO</div>
+        <div class="game-media">🍀</div>
+        <div class="game-body">
+          <h3>Gran Fortuna</h3>
+          <p>La clásica máquina de 5 carretes optimizada con símbolos de la suerte y premios frecuentes desde $200 CLP.</p>
+          <a href="index.html" class="btn-play-modern">Acceder al Juego ➔</a>
+        </div>
+      </div>
+
+      <!-- JUEGO 2 -->
+      <div class="game-card">
+        <div class="game-tag">NUEVO</div>
+        <div class="game-media">🌊</div>
+        <div class="game-body">
+          <h3>Abismo de Perlas</h3>
+          <p>Sumérgete en un entorno marino 2D detallado con animaciones fluidas, medusas y tesoros ocultos.</p>
+          <a href="abismo.html" class="btn-play-modern">Acceder al Juego ➔</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL CAJERO -->
+<div class="modal-backdrop" id="cajero-modal">
+  <div class="modal-card">
+    <div class="modal-top">
+      <h2>Bóveda y Cajero SpA</h2>
+      <div class="modal-close" onclick="toggleModal(false)">✕</div>
+    </div>
+
+    <div class="modal-nav">
+      <button class="nav-tab active" onclick="switchTab(event, 'tab-deposit')">Comprar Fichas</button>
+      <button class="nav-tab" onclick="switchTab(event, 'tab-withdraw')">Cuenta de Retiro</button>
+    </div>
+
+    <!-- Pestaña Depósito -->
+    <div class="tab-panel active" id="tab-deposit">
+      <div class="input-group">
+        <label>Monto de Carga en CLP</label>
+        <select id="monto-recarga">
+          <option value="10000">$10.000 CLP</option>
+          <option value="50000">$50.000 CLP</option>
+          <option value="150000" selected>$150.000 CLP (Estándar)</option>
+          <option value="500000">$500.000 CLP (VIP Pass)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Pasarela de Pago</label>
+        <select>
+          <option>Transferencia Bancaria (BancoEstado / CuentaRUT)</option>
+          <option>Webpay Plus (Débito / Crédito)</option>
+          <option>Cupón de Caja SpA</option>
+        </select>
+      </div>
+      <button class="btn-submit-modal" onclick="procesarRecarga()">Autorizar Recarga</button>
+      <div class="status-msg" id="msg-recarga"></div>
+    </div>
+
+    <!-- Pestaña Retiros -->
+    <div class="tab-panel" id="tab-withdraw">
+      <div class="input-group">
+        <label>Banco de Destino</label>
+        <select id="banco-input">
+          <option>BancoEstado (CuentaRUT)</option>
+          <option>Banco de Chile</option>
+          <option>Banco Santander</option>
+          <option>BCI</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Número de Cuenta o RUT</label>
+        <input type="text" id="cuenta-input" placeholder="Ej: 12.345.678-9">
+      </div>
+      <button class="btn-submit-modal" onclick="guardarTarjeta()">Vincular Cuenta Bancaria</button>
+      <div id="tarjeta-box"></div>
+      <div class="status-msg" id="msg-retiro"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  API_URL: 'http://127.0.0.1:8000/api/v1',
+  TOKEN: localStorage.getItem('casino_token') || null
+};
+
+async function initModernLobby() {
+  if (!CONFIG.TOKEN) {
+    try {
+      let res = await fetch(`${CONFIG.API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: 'testuser', password: '123456'})
+      });
+      if (res.ok) {
+        const data = await res.json();
+        CONFIG.TOKEN = data.access_token;
+        localStorage.setItem('casino_token', CONFIG.TOKEN);
+        document.getElementById('user-bal').textContent = Math.round(data.balance).toLocaleString('es-CL') + ' CLP';
+      }
+    } catch(e) { console.log("Servidor local inactivo"); }
+  }
+  verificarTarjeta();
+}
+
+function toggleModal(show) {
+  document.getElementById('cajero-modal').style.display = show ? 'flex' : 'none';
+}
+
+function switchTab(evt, tabId) {
+  document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  evt.currentTarget.classList.add('active');
+}
+
+function procesarRecarga() {
+  const monto = document.getElementById('monto-recarga').value;
+  const msg = document.getElementById('msg-recarga');
+  msg.textContent = 'Estableciendo canal seguro con pasarela...';
+  setTimeout(() => {
+    msg.textContent = `¡Depósito exitoso de $${parseInt(monto).toLocaleString('es-CL')} CLP acreditado!`;
+    let el = document.getElementById('user-bal');
+    let actual = parseInt(el.textContent.replace(/[^0-9]/g,'')) || 150000;
+    el.textContent = (actual + parseInt(monto)).toLocaleString('es-CL') + ' CLP';
+  }, 1000);
+}
+
+function guardarTarjeta() {
+  const banco = document.getElementById('banco-input').value;
+  const cuenta = document.getElementById('cuenta-input').value;
+  const msg = document.getElementById('msg-retiro');
+  if(!cuenta) { msg.textContent = 'Ingresa un número o RUT válido.'; return; }
+
+  msg.textContent = 'Validando con institución financiera...';
+  setTimeout(() => {
+    const data = { banco, cuenta: cuenta.slice(-4) };
+    localStorage.setItem('casino_tarjeta_spa', JSON.stringify(data));
+    msg.textContent = '¡Cuenta vinculada con éxito para retiros!';
+    verificarTarjeta();
+  }, 1000);
+}
+
+function verificarTarjeta() {
+  const guardada = localStorage.getItem('casino_tarjeta_spa');
+  const box = document.getElementById('tarjeta-box');
+  if (guardada) {
+    const t = JSON.parse(guardada);
+    box.innerHTML = `
+      <div class="bank-card-view">
+        <div class="bank-info">
+          <b>${t.banco}</b>
+          <span>Cuenta terminada en •••• ${t.cuenta}</span>
+        </div>
+        <span style="color:var(--accent-cyan);font-size:12px;font-weight:700">VERIFICADA</span>
+      </div>
+    `;
+  }
+}
+
+initModernLobby();
+</script>
+
+</body>
+</html>

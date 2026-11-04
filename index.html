@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gran Fortuna · Casino Vegas VIP SpA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Limelight&family=Figtree:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--velvet:#1a0509;--oxblood:#5c0f1f;--brass:#d9a441;--ivory:#f6ead2;--teal:#2ee6c5}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--velvet);color:var(--ivory);font-family:Figtree,system-ui,sans-serif;overflow:hidden}
+#app{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:8px;background:radial-gradient(120% 90% at 50% 30%,#3a0a15,var(--velvet) 70%)}
+canvas{display:block;width:min(100%,calc((100vh - 140px)*16/9));aspect-ratio:16/9;border-radius:14px;box-shadow:0 20px 60px #000a}
+#hud{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;justify-content:center;width:min(100%,960px)}
+.box{min-width:118px;padding:6px 14px;border:1px solid #d9a44166;border-radius:10px;background:#00000055;display:flex;flex-direction:column;justify-content:center}
+.box span{font-size:12px;opacity:.75}
+.box b{font-size:22px;font-variant-numeric:tabular-nums;color:var(--brass);min-width:100px;display:inline-block;text-align:center}
+.bet{flex-direction:row;align-items:center;gap:8px}
+.bet div{display:flex;flex-direction:column;align-items:center}
+button{font:inherit;color:var(--ivory);cursor:pointer}
+.sm{width:38px;height:38px;border-radius:50%;border:1px solid #d9a441aa;background:#00000066;font-size:20px;line-height:1}
+.pill{padding:0 18px;border-radius:10px;border:1px solid #d9a441aa;background:#00000066;font-weight:700}
+.pill[aria-pressed="true"]{background:var(--teal);color:#06241f;border-color:var(--teal)}
+.spin{padding:0 40px;min-height:56px;border-radius:999px;border:2px solid #fff7;background:linear-gradient(#ffd87a,#c58a22);color:#2a0710;font:400 26px Limelight,Georgia,serif;box-shadow:0 6px 0 #7a4f0f,0 10px 24px #0008}
+.spin:active{transform:translateY(3px);box-shadow:0 3px 0 #7a4f0f}
+button:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+#note{font-size:12px;opacity:.65;text-align:center}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="c" aria-label="Máquina tragamonedas"></canvas>
+  <div id="hud">
+    <div class="box"><span>Saldo</span><b id="bal">150.000</b></div>
+    <div class="box bet">
+      <button class="sm" id="bm" aria-label="Bajar apuesta">−</button>
+      <div><span>Apuesta</span><b id="bet">200</b></div>
+      <button class="sm" id="bp" aria-label="Subir apuesta">+</button>
+    </div>
+    <div class="box"><span>Ganancia</span><b id="win">0</b></div>
+    <button class="pill" id="auto" aria-pressed="false">Auto</button>
+    <button class="pill" id="snd" aria-pressed="true">Sonido</button>
+    <button class="spin" id="spin">Girar</button>
+  </div>
+  <div id="note">Plataforma SpA Chile — Conectado a FastAPI & MySQL</div>
+</div>
+
+<script>
+const CONFIG = {
+  API_URL: 'http://127.0.0.1:8000/api/v1',
+  TOKEN: null
+};
+
+async function autoLogin() {
+  try {
+    let res = await fetch(`${CONFIG.API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username: 'testuser', password: '123456'})
+    });
+    
+    if (!res.ok) {
+      await fetch(`${CONFIG.API_URL}/auth/register`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: 'testuser', password: '123456'})
+      });
+      res = await fetch(`${CONFIG.API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: 'testuser', password: '123456'})
+      });
+    }
+
+    if (res.ok) {
+      const data = await res.json();
+      CONFIG.TOKEN = data.access_token;
+      bal = data.balance;
+      hud();
+      setMsg('¡Conectado! Listo para apostar desde $200.');
+    }
+  } catch (e) {
+    setMsg('Modo offline — enciende FastAPI');
+  }
+}
+
+const SYM=[
+ {t:'🍒',p:[.5,1.5,6],w:28},{t:'🍋',p:[.5,2,8],w:24},{t:'🍇',p:[1,3,12],w:20},
+ {t:'🔔',p:[1.5,5,20],w:15},{t:'⭐',p:[3,10,40],w:8},{t:'💎',p:[6,20,80],w:4},{t:'7',p:[15,50,200],w:2}
+];
+const TW=SYM.reduce((a,s)=>a+s.w,0);
+const rw=()=>{let r=Math.random()*TW;for(let i=0;i<SYM.length;i++){r-=SYM[i].w;if(r<0)return i}return 0};
+
+const W=960,H=540,CS=120,RX=180,RY=110,NR=5,L=48,SPEED=24;
+const $=id=>document.getElementById(id);
+const cv=$('c'),ctx=cv.getContext('2d');cv.width=W*2;cv.height=H*2;
+
+// Apuestas desde $200 CLP en adelante
+const BETS=[200, 500, 1000, 2000, 5000, 10000, 20000];
+
+const fmt=n=>'$'+Math.round(n).toLocaleString('es-CL');
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const mod=n=>((n%L)+L)%L;
+let bi=0,bal=150000,busy=false,auto=false,muted=false,stopped=0,curRes=null,win=null,shake=0,time=0,msg='Conectando con FastAPI…';
+const reels=Array.from({length:NR},()=>({s:Array.from({length:L},rw),pos:Math.floor(Math.random()*L),mode:'idle',vel:0,v:0,el:0,p0:0,p1:0,dur:1}));
+
+let ac=null;
+function audio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(ac&&ac.state==='suspended')ac.resume()}
+function tone(f,d=.09,type='square',v=.05,when=0){if(muted||!ac)return;const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d)}
+const sfxStart=()=>[0,1,2,3].forEach(i=>tone(220*Math.pow(1.26,i),.07,'sawtooth',.03,i*.05));
+const sfxStop=()=>tone(150,.1,'triangle',.14);
+const sfxWin=n=>[523,659,784,1047,1319,1568].slice(0,n).forEach((f,i)=>tone(f,.22,'triangle',.07,i*.09));
+
+async function apiSpin(bet){
+  const headers={'Content-Type':'application/json'};
+  if(CONFIG.TOKEN) headers['Authorization'] = `Bearer ${CONFIG.TOKEN}`;
+  
+  const r=await fetch(CONFIG.API_URL+'/game/play',{method:'POST',headers,
+    body:JSON.stringify({game_type:'slot',game_name:'Gran Fortuna',bet_amount:bet})});
+  let d={};try{d=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(typeof d.detail==='string'?d.detail:'Error en la transacción');
+  
+  let grid=d.grid;
+  const wins=[];
+  for(let ln=0;ln<3;ln++){const s=grid[0][ln];let c=1;while(c<NR&&grid[c][ln]===s)c++;if(c>=2)wins.push({line:ln,symbol:s,count:c,payout:0})}
+  return{grid,wins:d.payout_amount>0?wins:[],total_win:d.payout_amount,balance:d.new_user_balance};
+}
+
+function setMsg(m){msg=m}
+function hud(){$('bal').textContent=fmt(bal);$('bet').textContent=fmt(BETS[bi])}
+function stopReel(i,col,fast){
+  const r=reels[i],P=Math.ceil(r.pos)+(fast?5:9);
+  [0,1,2].forEach(k=>r.s[mod(P-k)]=col[k]);
+  r.p0=r.pos;r.p1=P;r.el=0;r.dur=(P-r.pos)/SPEED*2.2;r.mode='stop';
+}
+
+async function spin(){
+  if(busy){if(curRes&&stopped<NR)reels.forEach((r,i)=>{if(r.mode==='spin')stopReel(i,curRes.grid[i],true)});return}
+  const bet=BETS[bi];
+  if(bal<bet){setMsg('Saldo insuficiente: baja la apuesta');auto=false;syncAuto();return}
+  audio();busy=true;curRes=null;win=null;stopped=0;parts.length=0;bal-=bet;hud();$('win').textContent='$0';
+  setMsg('Girando…');sfxStart();reels.forEach(r=>{r.mode='spin';r.v=0});
+  
+  const t0=performance.now();let res;
+  try{
+    res=await apiSpin(bet);
+  }catch(e){
+    reels.forEach(r=>{r.mode='idle';r.pos=Math.round(r.pos)});bal+=bet;hud();busy=false;auto=false;syncAuto();
+    setMsg(e.message||'Error de conexión.');return;
+  }
+  
+  curRes=res;const wait=Math.max(0,900-(performance.now()-t0));
+  reels.forEach((r,i)=>setTimeout(()=>{if(r.mode==='spin')stopReel(i,res.grid[i])},wait+i*380));
+}
+
+function finish(){
+  const res=curRes;
+  bal=res.balance;hud();
+  if(res.total_win<=0){setMsg('Sin premio. ¡Otra vez!');return end(500)}
+  const bet=BETS[bi],tot=res.total_win,big=tot>=bet*10?2:tot>=bet*3?1:0;
+  win={t:0,res,big,dur:big?3.4:2.2,shown:0,cells:new Set(res.wins.flatMap(w=>Array.from({length:w.count},(_,i)=>i*3+w.line)))};
+  setMsg('¡Ganaste ' + fmt(tot) + '!');
+  win.cells.forEach(k=>burst(RX+(k/3|0)*CS+CS/2,RY+(k%3)*CS+CS/2,big?10:6));
+  if(big){burst(W/2,RY+180,110);shake=RM?0:14}
+  sfxWin(big?6:4);end(win.dur*1000);
+}
+function end(ms){setTimeout(()=>{win=null;busy=false;if(auto)spin()},ms)}
+function syncAuto(){$('auto').setAttribute('aria-pressed',auto)}
+
+let parts=[];
+function burst(x,y,n){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=120+Math.random()*320;
+  parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-220,r:5+Math.random()*5,rot:Math.random()*6,vr:(Math.random()-.5)*14,life:1.4+Math.random()*.8})}}
+
+function update(dt){
+  time+=dt;shake*=Math.pow(.02,dt);
+  reels.forEach((r,i)=>{const prev=r.pos;
+    if(r.mode==='spin'){r.v=Math.min(SPEED,r.v+SPEED*dt*5);r.pos+=r.v*dt}
+    else if(r.mode==='stop'){r.el+=dt;const k=Math.min(1,r.el/r.dur),c=.6,x=k-1,e=1+(c+1)*x*x*x+c*x*x;r.pos=r.p0+(r.p1-r.p0)*e;
+      if(k>=1){r.pos=r.p1;r.mode='idle';stopped++;sfxStop();shake=Math.max(shake,RM?0:2.5);if(stopped===NR)finish()}}
+    r.vel=Math.abs(r.pos-prev)/Math.max(dt,.001);});
+  if(win){win.t+=dt;win.shown+=(win.res.total_win-win.shown)*Math.min(1,dt*3.2);$('win').textContent=fmt(win.t>.15?win.shown:0)}
+  parts.forEach(p=>{p.vy+=700*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot+=p.vr*dt;p.life-=dt});
+  parts=parts.filter(p=>p.life>0&&p.y<H+30);
+}
+
+function sym(i,x,y,sc=1,a=1){
+  ctx.save();ctx.globalAlpha=a;ctx.translate(x,y);ctx.scale(sc,sc);ctx.textAlign='center';ctx.textBaseline='middle';
+  if(SYM[i].t==='7'){ctx.font='900 92px Limelight,Georgia,serif';const g=ctx.createLinearGradient(0,-40,0,40);
+    g.addColorStop(0,'#ffe9a0');g.addColorStop(.5,'#e5a824');g.addColorStop(1,'#b3141f');
+    ctx.lineWidth=7;ctx.strokeStyle='#3a0610';ctx.lineJoin='round';ctx.strokeText('7',0,6);ctx.fillStyle=g;ctx.fillText('7',0,6)}
+  else{ctx.font='76px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';ctx.shadowColor='#0005';ctx.shadowBlur=6;ctx.shadowOffsetY=3;ctx.fillText(SYM[i].t,0,4)}
+  ctx.restore();
+}
+function brassGrad(x0,y0,x1,y1){const g=ctx.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,'#fff0b8');g.addColorStop(.35,'#d9a441');g.addColorStop(.7,'#8f5f14');g.addColorStop(1,'#f3cf7a');return g}
+function bg(){
+  const g=ctx.createRadialGradient(W/2,H/2,40,W/2,H/2,620);g.addColorStop(0,'#6b1226');g.addColorStop(.6,'#2a0710');g.addColorStop(1,'#12030a');
+  ctx.fillStyle=g;ctx.fillRect(-30,-30,W+60,H+60);
+}
+function title(){
+  ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='46px Limelight,Georgia,serif';
+  ctx.shadowColor='rgba(255,196,80,.55)';ctx.shadowBlur=24;ctx.fillStyle=brassGrad(0,20,0,80);ctx.fillText('Gran Fortuna',W/2,50);ctx.restore();
+}
+function cabinet(){
+  ctx.save();ctx.fillStyle=brassGrad(160,92,800,488);ctx.beginPath();ctx.roundRect(158,90,644,400,16);ctx.fill();
+  ctx.strokeStyle='#4a2c06';ctx.lineWidth=3;ctx.stroke();
+  ctx.fillStyle='#2a0710';ctx.beginPath();ctx.roundRect(RX-6,RY-6,NR*CS+12,3*CS+12,6);ctx.fill();ctx.restore();
+}
+function reelsDraw(){
+  const g=ctx.createLinearGradient(RX,0,RX+NR*CS,0);g.addColorStop(0,'#e9d9b4');g.addColorStop(.5,'#fff6df');g.addColorStop(1,'#e9d9b4');
+  ctx.fillStyle=g;ctx.fillRect(RX,RY,NR*CS,3*CS);
+  reels.forEach((r,i)=>{
+    ctx.save();ctx.beginPath();ctx.rect(RX+i*CS,RY,CS,3*CS);ctx.clip();
+    const base=Math.floor(r.pos),b=Math.min(1,r.vel/(SPEED*.9));
+    for(let n=base-3;n<=base+1;n++){const y=RY+(r.pos-n)*CS+CS/2,x=RX+i*CS+CS/2,s=r.s[mod(n)];
+      if(b>.12){sym(s,x,y-b*34,1,.28);sym(s,x,y+b*34,1,.28)}
+      sym(s,x,y,1,1-b*.35)}
+    ctx.restore();
+    if(i>0){ctx.fillStyle='rgba(120,70,10,.35)';ctx.fillRect(RX+i*CS-1,RY,2,3*CS)}
+  });
+}
+function winDraw(){
+  if(!win)return;const t=win.t,pulse=.5+.5*Math.sin(t*9);
+  ctx.save();
+  for(let i=0;i<NR;i++)for(let r=0;r<3;r++){const k=i*3+r,x=RX+i*CS,y=RY+r*CS;
+    if(win.cells.has(k)){
+      ctx.strokeStyle=`rgba(46,230,197,${.55+.45*pulse})`;ctx.lineWidth=4;ctx.shadowColor='#2ee6c5';ctx.shadowBlur=18;ctx.strokeRect(x+4,y+4,CS-8,CS-8);ctx.shadowBlur=0;
+      sym(reels[i].s[mod(reels[i].p1-r)],x+CS/2,y+CS/2,1.06+.1*Math.sin(t*8+i),1)}
+    else{ctx.fillStyle='rgba(26,5,9,.6)';ctx.fillRect(x,y,CS,CS)}}
+  ctx.restore();
+}
+function partsDraw(){
+  parts.forEach(p=>{ctx.save();ctx.globalAlpha=Math.min(1,p.life);ctx.translate(p.x,p.y);ctx.scale(Math.abs(Math.cos(p.rot)),1);
+    const g=ctx.createRadialGradient(0,0,1,0,0,p.r);g.addColorStop(0,'#fff0b8');g.addColorStop(1,'#d9a441');
+    ctx.fillStyle=g;ctx.strokeStyle='#8f5f14';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,p.r,0,7);ctx.fill();ctx.stroke();ctx.restore()});
+}
+function status(){
+  ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 20px Figtree,sans-serif';ctx.fillStyle='#f6ead2';ctx.globalAlpha=.92;ctx.fillText(msg,W/2,516);ctx.restore();
+}
+function draw(){
+  ctx.setTransform(2,0,0,2,0,0);ctx.clearRect(0,0,W,H);
+  ctx.translate(shake>.1?(Math.random()-.5)*shake:0,shake>.1?(Math.random()-.5)*shake:0);
+  bg();title();cabinet();reelsDraw();winDraw();partsDraw();status();
+}
+let last=performance.now();
+(function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();requestAnimationFrame(loop)})(last);
+
+$('spin').onclick=spin;
+$('bm').onclick=()=>{if(!busy){bi=Math.max(0,bi-1);hud()}};
+$('bp').onclick=()=>{if(!busy){bi=Math.min(BETS.length-1,bi+1);hud()}};
+$('auto').onclick=()=>{auto=!auto;syncAuto();if(auto&&!busy)spin()};
+$('snd').onclick=()=>{muted=!muted;$('snd').setAttribute('aria-pressed',!muted)};
+
+autoLogin();
+hud();
+</script>
+</body>
+</html>
