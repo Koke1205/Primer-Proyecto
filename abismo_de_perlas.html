@@ -27,9 +27,11 @@ button{font:inherit;color:var(--pearl);cursor:pointer}
 .spin:disabled{opacity:.7;cursor:wait}
 button:focus-visible{outline:3px solid var(--aqua);outline-offset:3px}
 #note{font-size:11px;opacity:.7;text-align:center;max-width:900px}
+.back-link{position:fixed;top:12px;left:12px;z-index:5;padding:8px 11px;border:1px solid #19d3c5aa;border-radius:10px;background:#04121feF;color:var(--pearl);text-decoration:none;font-size:12px;font-weight:700}
 </style>
 </head>
 <body>
+<a class="back-link" href="lobby.html">← Salón de juegos</a>
 <div id="app">
   <canvas id="c" aria-label="Tragamonedas Abismo de Perlas"></canvas>
   <div id="hud">
@@ -46,11 +48,13 @@ button:focus-visible{outline:3px solid var(--aqua);outline-offset:3px}
   </div>
   <div id="note">Plataforma SpA Chile — Conectado a FastAPI & MySQL</div>
 </div>
+<script src="casino.js"></script>
 <script>
 const CONFIG = {
-  API_URL: 'http://127.0.0.1:8000/api/v1',
+  API_URL: window.CASINO_API_URL || `${location.protocol==='https:'?'https:':'http:'}//${location.hostname||'127.0.0.1'}:8000/api/v1`,
   GAME_NAME: 'Abismo de Perlas',
-  TOKEN: null
+  TOKEN: sessionStorage.getItem('casino_session_token'),
+  unlimitedCredits: false
 };
 
 (()=>{
@@ -69,43 +73,10 @@ const BETS=[200, 500, 1000, 2000, 5000, 10000, 20000];
 const fmt=n=>'$'+Math.round(n).toLocaleString('es-CL');
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const mod=n=>((n%L)+L)%L;
-let bi=0,bal=150000,busy=false,auto=false,muted=false,stopped=0,curRes=null,win=null,shake=0,flash=0,time=0,msg='Sondeando las profundidades…',parts=[];
+let bi=0,bal=0,busy=false,auto=false,muted=false,stopped=0,curRes=null,win=null,shake=0,flash=0,time=0,msg='Verificando sesión…',parts=[];
 const reels=Array.from({length:NR},()=>({s:Array.from({length:L},rw),pos:Math.floor(Math.random()*L),mode:'idle',vel:0,v:0,el:0,p0:0,p1:0,dur:1}));
 const bubs=Array.from({length:40},()=>({x:Math.random()*W,y:Math.random()*H,r:1.5+Math.random()*5,v:18+Math.random()*40,p:Math.random()*6}));
 const fish=Array.from({length:7},(_,i)=>({x:Math.random()*W,y:80+Math.random()*380,v:(i%2?1:-1)*(22+Math.random()*30),s:24+Math.random()*22,t:i%3?'🐟':'🐠'}));
-
-async function autoLogin() {
-  try {
-    let res = await fetch(`${CONFIG.API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({username: 'testuser', password: '123456'})
-    });
-    
-    if (!res.ok) {
-      await fetch(`${CONFIG.API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({username: 'testuser', password: '123456'})
-      });
-      res = await fetch(`${CONFIG.API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({username: 'testuser', password: '123456'})
-      });
-    }
-
-    if (res.ok) {
-      const data = await res.json();
-      CONFIG.TOKEN = data.access_token;
-      bal = data.balance;
-      hud();
-      msg = 'Conectado al Abismo. ¡Listo para girar!';
-    }
-  } catch (e) {
-    msg = 'Modo offline — enciende tu servidor FastAPI';
-  }
-}
 
 let ac=null,amb=null;
 function audio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(ac&&ac.state==='suspended')ac.resume();ambient()}
@@ -130,15 +101,13 @@ async function apiSpin(bet){
   const r=await fetch(CONFIG.API_URL+'/game/play',{method:'POST',headers,
     body:JSON.stringify({game_type:'slot',game_name:CONFIG.GAME_NAME,bet_amount:bet})});
   let d={};try{d=await r.json()}catch(e){}
+  if(r.status===401){sessionStorage.removeItem('casino_session_token');location.replace('auth.html?next=abismo_de_perlas.html');throw new Error('La sesión venció. Inicia sesión nuevamente.')}
   if(!r.ok)throw new Error(typeof d.detail==='string'?d.detail:'Error en la transacción');
-  
-  let grid=d.grid;
-  const pay=d.payout_amount||0;
-  const wins=pay>0?scan(grid):[];
-  return{grid,wins,total_win:pay,balance:d.new_user_balance};
+  bal=d.new_user_balance;CONFIG.unlimitedCredits=d.unlimited_credits;hud();
+  return{grid:d.grid,wins:d.wins.map(item=>({line:item.line,symbol:item.symbol,count:item.count,payout:item.payout})),total_win:d.payout_amount,balance:d.new_user_balance};
 }
 
-function hud(){$('bal').textContent=bal==null?'—':fmt(bal);$('bet').textContent=fmt(BETS[bi])}
+function hud(){$('bal').textContent=CONFIG.unlimitedCredits?'∞':bal==null?'—':fmt(bal);$('bet').textContent=fmt(BETS[bi])}
 
 function stopReel(i,col,fast){
   const r=reels[i],P=Math.ceil(r.pos)+(fast?5:9);
@@ -149,14 +118,14 @@ function stopReel(i,col,fast){
 async function spin(){
   if(busy){if(curRes&&stopped<NR)reels.forEach((r,i)=>{if(r.mode==='spin')stopReel(i,curRes.grid[i],true)});return}
   const bet=BETS[bi];
-  if(bal!=null&&bal<bet){msg='Saldo insuficiente: baja la apuesta';auto=false;sync();return}
+  if(!CONFIG.unlimitedCredits&&bal<bet){msg='Saldo insuficiente. Vuelve al salón para consultar el saldo.';auto=false;sync();return}
   audio();busy=true;curRes=null;win=null;stopped=0;parts.length=0;$('win').textContent='$0';$('spin').disabled=true;
-  if(bal!=null)bal-=bet;hud();msg='Sondeando las profundidades…';sfxStart();reels.forEach(r=>{r.mode='spin';r.v=0});
+  if(!CONFIG.unlimitedCredits)bal-=bet;hud();msg='Sondeando las profundidades…';sfxStart();reels.forEach(r=>{r.mode='spin';r.v=0});
   
   const t0=performance.now();let res;
   try{res=await apiSpin(bet)}
   catch(e){
-    reels.forEach(r=>{r.mode='idle';r.pos=Math.round(r.pos)});if(bal!=null)bal+=bet;hud();busy=false;auto=false;sync();$('spin').disabled=false;
+    reels.forEach(r=>{r.mode='idle';r.pos=Math.round(r.pos)});if(!CONFIG.unlimitedCredits)bal+=bet;hud();busy=false;auto=false;sync();$('spin').disabled=false;
     msg=e.message||'Error de conexión.';return;
   }
   
@@ -302,8 +271,13 @@ $('auto').onclick=()=>{auto=!auto;sync();if(auto&&!busy)spin()};
 $('snd').onclick=()=>{muted=!muted;$('snd').setAttribute('aria-pressed',!muted);if(amb)amb.gain.value=muted?0:.22};
 addEventListener('keydown',e=>{if(e.code==='Space'&&e.target===document.body){e.preventDefault();spin()}});
 
-autoLogin();
-hud();
+$('spin').disabled=true;
+CasinoAuth.requireSession().then(user=>{
+  if(!user)return;
+  bal=user.balance;CONFIG.unlimitedCredits=user.unlimited_credits;hud();
+  msg=`Sesión de ${user.username}. Saldo sincronizado con el servidor.`;
+  $('spin').disabled=false;
+}).catch(error=>{msg=error.message});
 })();
 </script>
 </body>

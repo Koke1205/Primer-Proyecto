@@ -198,7 +198,7 @@ main { max-width: 1300px; margin: 0 auto; padding: 48px 24px; display: flex; fle
     <div class="brand-icon">💎</div>
     <div class="brand-text">
       <h3>Vegas VIP SpA</h3>
-      <span>Plataforma Certificada</span>
+      <span>Salón de demostración</span>
     </div>
   </div>
   <div class="nav-actions">
@@ -206,16 +206,14 @@ main { max-width: 1300px; margin: 0 auto; padding: 48px 24px; display: flex; fle
       <span>Saldo Activo</span>
       <b id="user-bal">150.000 CLP</b>
     </div>
-    <button class="btn-deposit" onclick="toggleModal(true)">
-      <span>💳</span> Cajero / Retiros
-    </button>
+    <button class="btn-deposit" id="logout" type="button">Cerrar sesión</button>
   </div>
 </nav>
 
 <main>
   <div class="hero-banner">
     <h1>Salón de Juegos Exclusivo</h1>
-    <p>Experimenta tecnología de juego de alta precisión con motor matemático seguro y cumplimiento fiscal estricto para Chile.</p>
+    <p>Disfruta tres tragamonedas conectadas a una cuenta y a un saldo administrado por el servidor.</p>
   </div>
 
   <div>
@@ -244,148 +242,36 @@ main { max-width: 1300px; margin: 0 auto; padding: 48px 24px; display: flex; fle
           <a href="abismo_de_perlas.html" class="btn-play-modern">Acceder al Juego ➔</a>
         </div>
       </div>
+
+      <!-- JUEGO 3 -->
+      <div class="game-card">
+        <div class="game-tag">NUEVO</div>
+        <div class="game-media">🐉</div>
+        <div class="game-body">
+          <h3>Fortuna China</h3>
+          <p>Descubre cinco carretes dorados, una ruleta de bonificación, giros gratis y premios con multiplicadores.</p>
+          <a href="fortuna_china.html" class="btn-play-modern">Acceder al Juego ➔</a>
+        </div>
+      </div>
     </div>
   </div>
 </main>
 
-<!-- MODAL CAJERO -->
-<div class="modal-backdrop" id="cajero-modal">
-  <div class="modal-card">
-    <div class="modal-top">
-      <h2>Bóveda y Cajero SpA</h2>
-      <div class="modal-close" onclick="toggleModal(false)">✕</div>
-    </div>
-
-    <div class="modal-nav">
-      <button class="nav-tab active" onclick="switchTab(event, 'tab-deposit')">Comprar Fichas</button>
-      <button class="nav-tab" onclick="switchTab(event, 'tab-withdraw')">Cuenta de Retiro</button>
-    </div>
-
-    <!-- Pestaña Depósito -->
-    <div class="tab-panel active" id="tab-deposit">
-      <div class="input-group">
-        <label>Monto de Carga en CLP</label>
-        <select id="monto-recarga">
-          <option value="10000">$10.000 CLP</option>
-          <option value="50000">$50.000 CLP</option>
-          <option value="150000" selected>$150.000 CLP (Estándar)</option>
-          <option value="500000">$500.000 CLP (VIP Pass)</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label>Pasarela de Pago</label>
-        <select>
-          <option>Transferencia Bancaria (BancoEstado / CuentaRUT)</option>
-          <option>Webpay Plus (Débito / Crédito)</option>
-          <option>Cupón de Caja SpA</option>
-        </select>
-      </div>
-      <button class="btn-submit-modal" onclick="procesarRecarga()">Autorizar Recarga</button>
-      <div class="status-msg" id="msg-recarga"></div>
-    </div>
-
-    <!-- Pestaña Retiros -->
-    <div class="tab-panel" id="tab-withdraw">
-      <div class="input-group">
-        <label>Banco de Destino</label>
-        <select id="banco-input">
-          <option>BancoEstado (CuentaRUT)</option>
-          <option>Banco de Chile</option>
-          <option>Banco Santander</option>
-          <option>BCI</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label>Número de Cuenta o RUT</label>
-        <input type="text" id="cuenta-input" placeholder="Ej: 12.345.678-9">
-      </div>
-      <button class="btn-submit-modal" onclick="guardarTarjeta()">Vincular Cuenta Bancaria</button>
-      <div id="tarjeta-box"></div>
-      <div class="status-msg" id="msg-retiro"></div>
-    </div>
-  </div>
-</div>
-
+<p id="lobby-status" role="status" aria-live="polite" style="text-align:center;color:#f3cf7a"></p>
+<script src="casino.js"></script>
 <script>
-const CONFIG = {
-  API_URL: 'http://127.0.0.1:8000/api/v1',
-  TOKEN: localStorage.getItem('casino_token') || null
-};
-
 async function initModernLobby() {
-  if (!CONFIG.TOKEN) {
-    try {
-      let res = await fetch(`${CONFIG.API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({username: 'testuser', password: '123456'})
-      });
-      if (res.ok) {
-        const data = await res.json();
-        CONFIG.TOKEN = data.access_token;
-        localStorage.setItem('casino_token', CONFIG.TOKEN);
-        document.getElementById('user-bal').textContent = Math.round(data.balance).toLocaleString('es-CL') + ' CLP';
-      }
-    } catch(e) { console.log("Servidor local inactivo"); }
-  }
-  verificarTarjeta();
-}
-
-function toggleModal(show) {
-  document.getElementById('cajero-modal').style.display = show ? 'flex' : 'none';
-}
-
-function switchTab(evt, tabId) {
-  document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  evt.currentTarget.classList.add('active');
-}
-
-function procesarRecarga() {
-  const monto = document.getElementById('monto-recarga').value;
-  const msg = document.getElementById('msg-recarga');
-  msg.textContent = 'Estableciendo canal seguro con pasarela...';
-  setTimeout(() => {
-    msg.textContent = `¡Depósito exitoso de $${parseInt(monto).toLocaleString('es-CL')} CLP acreditado!`;
-    let el = document.getElementById('user-bal');
-    let actual = parseInt(el.textContent.replace(/[^0-9]/g,'')) || 150000;
-    el.textContent = (actual + parseInt(monto)).toLocaleString('es-CL') + ' CLP';
-  }, 1000);
-}
-
-function guardarTarjeta() {
-  const banco = document.getElementById('banco-input').value;
-  const cuenta = document.getElementById('cuenta-input').value;
-  const msg = document.getElementById('msg-retiro');
-  if(!cuenta) { msg.textContent = 'Ingresa un número o RUT válido.'; return; }
-
-  msg.textContent = 'Validando con institución financiera...';
-  setTimeout(() => {
-    const data = { banco, cuenta: cuenta.slice(-4) };
-    localStorage.setItem('casino_tarjeta_spa', JSON.stringify(data));
-    msg.textContent = '¡Cuenta vinculada con éxito para retiros!';
-    verificarTarjeta();
-  }, 1000);
-}
-
-function verificarTarjeta() {
-  const guardada = localStorage.getItem('casino_tarjeta_spa');
-  const box = document.getElementById('tarjeta-box');
-  if (guardada) {
-    const t = JSON.parse(guardada);
-    box.innerHTML = `
-      <div class="bank-card-view">
-        <div class="bank-info">
-          <b>${t.banco}</b>
-          <span>Cuenta terminada en •••• ${t.cuenta}</span>
-        </div>
-        <span style="color:var(--accent-cyan);font-size:12px;font-weight:700">VERIFICADA</span>
-      </div>
-    `;
+  try {
+    const user = await CasinoAuth.requireSession();
+    if (!user) return;
+    CasinoAuth.showBalance(document.getElementById('user-bal'), user);
+    document.getElementById('lobby-status').textContent = `Sesión de ${user.username} · saldo compartido entre los juegos`;
+  } catch (error) {
+    document.getElementById('lobby-status').textContent = error.message;
   }
 }
 
+document.getElementById('logout').addEventListener('click', CasinoAuth.signOut);
 initModernLobby();
 </script>
 

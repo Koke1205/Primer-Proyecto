@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10070b">
+<title>Acceso seguro · Gran Fortuna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--gold:#f3cf7a;--red:#a92232;--panel:#1a0b10;--muted:#c0aeb0}
+*{box-sizing:border-box}
+body{min-height:100vh;margin:0;padding:24px;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 0,#48131e,#10070b 68%);color:#fff8ee;font-family:Outfit,system-ui,sans-serif}
+.card{width:min(440px,100%);padding:30px;border:1px solid #f3cf7a55;border-radius:22px;background:#1a0b10eF;box-shadow:0 24px 80px #0009}
+.brand{text-align:center}.brand-icon{font-size:38px}.brand h1{margin:4px 0;color:var(--gold);font:700 29px "Playfair Display",serif}.brand p{margin:0;color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:8px;margin:24px 0 18px;padding:4px;border:1px solid #f3cf7a30;border-radius:12px;background:#10070b}
+.tabs button{flex:1;padding:10px;border:0;border-radius:9px;background:transparent;color:var(--muted);font:700 13px Outfit;cursor:pointer}
+.tabs button[aria-selected=true]{background:#43141e;color:var(--gold)}
+.field{display:flex;flex-direction:column;gap:6px;margin:12px 0}.field label{color:#dfc58e;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.field input{width:100%;padding:12px 14px;border:1px solid #f3cf7a40;border-radius:10px;background:#0f070a;color:#fff;font:inherit}.field input:focus{outline:2px solid #f3cf7a}
+.help{margin:8px 0;color:var(--muted);font-size:11px;line-height:1.5}
+.submit{width:100%;margin-top:10px;padding:13px;border:0;border-radius:11px;background:linear-gradient(135deg,#ffe39a,#c58a22);color:#26120a;font:800 14px Outfit;cursor:pointer}
+.submit:disabled{opacity:.6;cursor:wait}.message{min-height:24px;margin:14px 0 0;color:#9be7b4;text-align:center;font-size:13px}.message.error{color:#ff9999}
+.back{display:block;margin-top:16px;color:var(--gold);text-align:center;text-decoration:none;font-size:13px}
+.secure-note{margin-top:20px;padding-top:14px;border-top:1px solid #f3cf7a22;color:#ab999b;font-size:10px;line-height:1.5;text-align:center}
+[hidden]{display:none!important}
+button:focus-visible,a:focus-visible{outline:2px solid #fff1a8;outline-offset:3px}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="brand"><div class="brand-icon" aria-hidden="true">💎</div><h1>Gran Fortuna</h1><p>Acceso seguro al salón de juegos</p></div>
+  <div class="tabs" role="tablist">
+    <button id="loginTab" role="tab" aria-selected="true" type="button">Iniciar sesión</button>
+    <button id="registerTab" role="tab" aria-selected="false" type="button">Crear cuenta</button>
+  </div>
+  <form id="loginForm">
+    <div class="field"><label for="loginUsername">Usuario</label><input id="loginUsername" name="username" autocomplete="username" required maxlength="50"></div>
+    <div class="field"><label for="loginPassword">Contraseña</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required maxlength="72"></div>
+    <button class="submit" type="submit">Entrar al salón</button>
+  </form>
+  <form id="registerForm" hidden>
+    <div class="field"><label for="registerUsername">Usuario</label><input id="registerUsername" name="username" autocomplete="username" required minlength="3" maxlength="50" pattern="[A-Za-z0-9_.-]+"></div>
+    <div class="field"><label for="registerEmail">Correo electrónico</label><input id="registerEmail" name="email" type="email" autocomplete="email" required maxlength="254"></div>
+    <div class="field"><label for="registerPassword">Contraseña</label><input id="registerPassword" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="72"></div>
+    <p class="help">Mínimo 12 caracteres, con mayúscula, minúscula y número. Debes verificar el correo para activar la cuenta.</p>
+    <button class="submit" type="submit">Crear cuenta segura</button>
+  </form>
+  <p class="message" id="message" role="status" aria-live="polite"></p>
+  <a class="back" href="lobby.html">← Volver al salón</a>
+  <p class="secure-note">Los créditos son virtuales. No ingreses información de pago. La contraseña se valida en el servidor y no se comparte entre juegos.</p>
+</main>
+<script src="casino.js"></script>
+<script>
+(() => {
+  const loginTab = document.getElementById('loginTab');
+  const registerTab = document.getElementById('registerTab');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const message = document.getElementById('message');
+  const params = new URLSearchParams(location.search);
+  const allowedDestinations = new Set(['lobby.html','index.html','abismo_de_perlas.html','fortuna_china.html']);
+  const requestedDestination = params.get('next');
+  const destination = allowedDestinations.has(requestedDestination) ? requestedDestination : 'lobby.html';
+
+  function showMessage(text, isError = false) {
+    message.textContent = text;
+    message.classList.toggle('error', isError);
+  }
+  function switchTab(register) {
+    loginForm.hidden = register;
+    registerForm.hidden = !register;
+    loginTab.setAttribute('aria-selected', String(!register));
+    registerTab.setAttribute('aria-selected', String(register));
+    showMessage('');
+  }
+  loginTab.addEventListener('click', () => switchTab(false));
+  registerTab.addEventListener('click', () => switchTab(true));
+
+  const verificationToken = params.get('verify');
+  if (verificationToken) {
+    switchTab(false);
+    document.getElementById('loginPassword').value = '';
+    CasinoAuth.api('/auth/verify-email', {
+      method:'POST',
+      body:JSON.stringify({token:verificationToken})
+    }).then(result => showMessage(result.message))
+      .catch(error => showMessage(error.message, true));
+  }
+
+  loginForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = loginForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+    try {
+      const result = await CasinoAuth.api('/auth/login', {
+        method:'POST',
+        body:JSON.stringify({
+          username:loginForm.elements.username.value.trim(),
+          password:loginForm.elements.password.value
+        })
+      });
+      sessionStorage.setItem('casino_session_token', result.access_token);
+      window.location.replace(destination);
+    } catch (error) {
+      showMessage(error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  registerForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = registerForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+    try {
+      const result = await CasinoAuth.api('/auth/register', {
+        method:'POST',
+        body:JSON.stringify({
+          username:registerForm.elements.username.value.trim(),
+          email:registerForm.elements.email.value.trim(),
+          password:registerForm.elements.password.value
+        })
+      });
+      switchTab(false);
+      showMessage(result.message);
+    } catch (error) {
+      showMessage(error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

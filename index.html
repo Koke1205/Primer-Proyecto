@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Gran Fortuna · Casino Vegas VIP SpA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Limelight&family=Figtree:wght@500;700&display=swap" rel="stylesheet">
@@ -26,9 +26,30 @@ button{font:inherit;color:var(--ivory);cursor:pointer}
 .spin:active{transform:translateY(3px);box-shadow:0 3px 0 #7a4f0f}
 button:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
 #note{font-size:12px;opacity:.65;text-align:center}
+.back-link{position:fixed;top:14px;left:16px;z-index:5;padding:8px 12px;border:1px solid #d9a44188;border-radius:10px;background:#1a0509dd;color:var(--ivory);text-decoration:none;font-size:13px;font-weight:700}
+.back-link:hover{background:#5c0f1f}
+@media(max-width:600px){
+  html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
+  #app{width:100%;min-height:100vh;min-height:100svh;height:auto;justify-content:flex-start;gap:10px;padding:58px 8px 14px}
+  canvas{width:100%;height:auto;aspect-ratio:16/9;border-radius:10px}
+  #hud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+  .box{min-width:0;padding:6px 4px;align-items:center}
+  .box span{font-size:11px}
+  .box b{min-width:0;width:100%;font-size:clamp(14px,4.5vw,19px);white-space:nowrap}
+  .bet{gap:4px}
+  .sm{flex:none;width:44px;height:44px}
+  .pill{min-height:44px;padding:0 6px}
+  .spin{grid-column:1/-1;min-height:52px;padding:0 20px}
+  #note{max-width:100%;line-height:1.4}
+  .back-link{top:max(8px,env(safe-area-inset-top));left:max(8px,env(safe-area-inset-left))}
+}
+@media(max-width:380px){
+  #hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 </style>
 </head>
 <body>
+<a class="back-link" href="lobby.html">← Salón de juegos</a>
 <div id="app">
   <canvas id="c" aria-label="Máquina tragamonedas"></canvas>
   <div id="hud">
@@ -46,44 +67,13 @@ button:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
   <div id="note">Plataforma SpA Chile — Conectado a FastAPI & MySQL</div>
 </div>
 
+<script src="casino.js"></script>
 <script>
 const CONFIG = {
-  API_URL: 'http://127.0.0.1:8000/api/v1',
-  TOKEN: null
+  API_URL: window.CASINO_API_URL || `${location.protocol==='https:'?'https:':'http:'}//${location.hostname||'127.0.0.1'}:8000/api/v1`,
+  TOKEN: sessionStorage.getItem('casino_session_token'),
+  unlimitedCredits: false
 };
-
-async function autoLogin() {
-  try {
-    let res = await fetch(`${CONFIG.API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({username: 'testuser', password: '123456'})
-    });
-    
-    if (!res.ok) {
-      await fetch(`${CONFIG.API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({username: 'testuser', password: '123456'})
-      });
-      res = await fetch(`${CONFIG.API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({username: 'testuser', password: '123456'})
-      });
-    }
-
-    if (res.ok) {
-      const data = await res.json();
-      CONFIG.TOKEN = data.access_token;
-      bal = data.balance;
-      hud();
-      setMsg('¡Conectado! Listo para apostar desde $200.');
-    }
-  } catch (e) {
-    setMsg('Modo offline — enciende FastAPI');
-  }
-}
 
 const SYM=[
  {t:'🍒',p:[.5,1.5,6],w:28},{t:'🍋',p:[.5,2,8],w:24},{t:'🍇',p:[1,3,12],w:20},
@@ -119,16 +109,15 @@ async function apiSpin(bet){
   const r=await fetch(CONFIG.API_URL+'/game/play',{method:'POST',headers,
     body:JSON.stringify({game_type:'slot',game_name:'Gran Fortuna',bet_amount:bet})});
   let d={};try{d=await r.json()}catch(e){}
+  if(r.status===401){sessionStorage.removeItem('casino_session_token');location.replace('auth.html?next=index.html');throw new Error('La sesión venció. Inicia sesión nuevamente.')}
   if(!r.ok)throw new Error(typeof d.detail==='string'?d.detail:'Error en la transacción');
   
-  let grid=d.grid;
-  const wins=[];
-  for(let ln=0;ln<3;ln++){const s=grid[0][ln];let c=1;while(c<NR&&grid[c][ln]===s)c++;if(c>=2)wins.push({line:ln,symbol:s,count:c,payout:0})}
-  return{grid,wins:d.payout_amount>0?wins:[],total_win:d.payout_amount,balance:d.new_user_balance};
+  bal=d.new_user_balance;CONFIG.unlimitedCredits=d.unlimited_credits;hud();
+  return{grid:d.grid,wins:d.wins.map(item=>({line:item.line,symbol:item.symbol,count:item.count,payout:item.payout})),total_win:d.payout_amount,balance:d.new_user_balance};
 }
 
 function setMsg(m){msg=m}
-function hud(){$('bal').textContent=fmt(bal);$('bet').textContent=fmt(BETS[bi])}
+function hud(){$('bal').textContent=CONFIG.unlimitedCredits?'∞':fmt(bal);$('bet').textContent=fmt(BETS[bi])}
 function stopReel(i,col,fast){
   const r=reels[i],P=Math.ceil(r.pos)+(fast?5:9);
   [0,1,2].forEach(k=>r.s[mod(P-k)]=col[k]);
@@ -138,15 +127,15 @@ function stopReel(i,col,fast){
 async function spin(){
   if(busy){if(curRes&&stopped<NR)reels.forEach((r,i)=>{if(r.mode==='spin')stopReel(i,curRes.grid[i],true)});return}
   const bet=BETS[bi];
-  if(bal<bet){setMsg('Saldo insuficiente: baja la apuesta');auto=false;syncAuto();return}
-  audio();busy=true;curRes=null;win=null;stopped=0;parts.length=0;bal-=bet;hud();$('win').textContent='$0';
+  if(!CONFIG.unlimitedCredits&&bal<bet){setMsg('Saldo insuficiente. Vuelve al salón para consultar el saldo.');auto=false;syncAuto();return}
+  audio();busy=true;curRes=null;win=null;stopped=0;parts.length=0;if(!CONFIG.unlimitedCredits)bal-=bet;hud();$('win').textContent='$0';
   setMsg('Girando…');sfxStart();reels.forEach(r=>{r.mode='spin';r.v=0});
   
   const t0=performance.now();let res;
   try{
     res=await apiSpin(bet);
   }catch(e){
-    reels.forEach(r=>{r.mode='idle';r.pos=Math.round(r.pos)});bal+=bet;hud();busy=false;auto=false;syncAuto();
+    reels.forEach(r=>{r.mode='idle';r.pos=Math.round(r.pos)});if(!CONFIG.unlimitedCredits)bal+=bet;hud();busy=false;auto=false;syncAuto();
     setMsg(e.message||'Error de conexión.');return;
   }
   
@@ -251,8 +240,13 @@ $('bp').onclick=()=>{if(!busy){bi=Math.min(BETS.length-1,bi+1);hud()}};
 $('auto').onclick=()=>{auto=!auto;syncAuto();if(auto&&!busy)spin()};
 $('snd').onclick=()=>{muted=!muted;$('snd').setAttribute('aria-pressed',!muted)};
 
-autoLogin();
-hud();
+$('spin').disabled=true;
+CasinoAuth.requireSession().then(user=>{
+  if(!user)return;
+  bal=user.balance;CONFIG.unlimitedCredits=user.unlimited_credits;hud();
+  setMsg(`Sesión de ${user.username}. Saldo sincronizado con el servidor.`);
+  $('spin').disabled=false;
+}).catch(error=>setMsg(error.message));
 </script>
 </body>
 </html>

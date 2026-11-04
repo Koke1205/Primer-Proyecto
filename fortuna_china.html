@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#17070b">
+<title>Fortuna China · Salón de la Fortuna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--red:#ed3348;--gold:#ffda78;--gold-bright:#fff2b0;--ink:#17070b;--panel:#260b12;--jade:#4ee0a4;--muted:#c9a8a5}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--ink)}
+body{min-height:100vh;margin:0;color:#fff8e9;font-family:Outfit,system-ui,sans-serif;background:radial-gradient(ellipse at 50% 5%,#641b22 0,#2b0c13 42%,#10060a 100%);overflow-x:hidden}
+body::before,body::after{position:fixed;inset:0;content:"";pointer-events:none;z-index:-1}
+body::before{opacity:.23;background-image:radial-gradient(circle at 16% 28%,#ffdd8a 0 1px,transparent 2px),radial-gradient(circle at 83% 18%,#ff596b 0 1px,transparent 2px),radial-gradient(circle at 65% 76%,#ffdd8a 0 1px,transparent 2px);background-size:190px 190px,230px 230px,270px 270px;animation:embers 16s linear infinite}
+body::after{background:linear-gradient(90deg,transparent 0 9%,#ffda7808 9.1% 9.2%,transparent 9.3% 90.7%,#ffda7808 90.8% 90.9%,transparent 91%)}
+button,a{-webkit-tap-highlight-color:transparent}
+button{font:inherit}
+.topbar{width:min(1120px,calc(100% - 32px));margin:0 auto;padding:18px 0 12px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.back-link{display:inline-flex;align-items:center;gap:8px;color:#ffe9b0;text-decoration:none;font-weight:700;font-size:14px;transition:color .2s,transform .2s}
+.back-link:hover{color:#fff;transform:translateX(-3px)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:42px;height:42px;display:grid;place-items:center;border:1px solid #ffe29a99;border-radius:14px;background:linear-gradient(145deg,#fa5260,#8a1425);box-shadow:0 0 25px #ff344933;font-size:24px}
+.brand-name{font-family:"Playfair Display",serif;font-weight:800;letter-spacing:.04em;font-size:17px}
+.brand-sub{display:block;color:#dbb67e;font-size:9px;letter-spacing:.2em;text-transform:uppercase}
+.wallet{min-width:142px;padding:8px 14px;border:1px solid #ffdc8755;border-radius:13px;background:#1a080dc9;text-align:right}
+.wallet span{display:block;color:#c9a8a5;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.wallet b{color:var(--gold-bright);font-size:18px;font-variant-numeric:tabular-nums}
+main{width:min(1040px,calc(100% - 28px));margin:0 auto 34px}
+.intro{text-align:center;margin:5px 0 17px}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;color:var(--gold);font-size:10px;font-weight:800;letter-spacing:.25em;text-transform:uppercase}
+.eyebrow::before,.eyebrow::after{content:"";width:25px;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}
+.eyebrow::after{transform:rotate(180deg)}
+h1{margin:5px 0 2px;font:800 clamp(30px,5vw,47px)/1.08 "Playfair Display",serif;letter-spacing:.025em;background:linear-gradient(180deg,#fff8d8 10%,#ffde84 55%,#f49b42);color:transparent;background-clip:text;-webkit-background-clip:text;filter:drop-shadow(0 3px 14px #ffca4b55)}
+.intro p{margin:4px 0;color:#d9b8a8;font-size:13px}
+.practice-tag{display:inline-flex;margin-top:8px;align-items:center;gap:6px;padding:5px 10px;border:1px solid #4ee0a455;border-radius:99px;background:#143a2b77;color:#9ff0c6;font-size:10px;font-weight:800;letter-spacing:.08em}
+.practice-tag i{width:6px;height:6px;border-radius:50%;background:#54f0a8;box-shadow:0 0 10px #54f0a8}
+.wheel-card,.machine{position:relative;border:1px solid #ffda784d;border-radius:24px;background:linear-gradient(140deg,#351018eF,#1b080ef5 70%);box-shadow:0 18px 60px #0008,inset 0 1px #fff1;overflow:hidden}
+.wheel-card{display:grid;grid-template-columns:250px 1fr;align-items:center;gap:22px;min-height:250px;padding:14px 28px;margin-bottom:16px}
+.wheel-card::before,.machine::before{position:absolute;inset:0;content:"";pointer-events:none;background:linear-gradient(115deg,#ffdf8410,transparent 35% 70%,#f34c5610)}
+.wheel-stage{position:relative;width:220px;height:220px;margin:0 auto;display:grid;place-items:center}
+.pointer{position:absolute;z-index:3;top:-2px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:29px solid #fff3a4;filter:drop-shadow(0 2px 6px #ff314b);transform-origin:50% 7px}
+.wheel{--wheel-label-offset:-76px;position:relative;width:198px;height:198px;border:5px solid #ffe8a6;border-radius:50%;background:conic-gradient(from -22.5deg,#c51f35 0deg 45deg,#f6bd50 45deg 90deg,#9c1830 90deg 135deg,#f6bd50 135deg 180deg,#c51f35 180deg 225deg,#f6bd50 225deg 270deg,#9c1830 270deg 315deg,#f6bd50 315deg 360deg);box-shadow:0 0 0 5px #6c1820,0 0 34px #ff435055,inset 0 0 18px #3a0710;transition:transform 4.6s cubic-bezier(.08,.72,.08,1)}
+.wheel::before{position:absolute;inset:5px;border:1px dashed #fff8;border-radius:50%;content:""}
+.wheel-label{position:absolute;top:50%;left:50%;display:block;width:72px;margin:-8px 0 0 -36px;color:#fff8e8;text-align:center;text-shadow:0 1px 3px #4c0711;font-size:9px;font-weight:900;line-height:1.05;letter-spacing:.02em;transform-origin:50% 8px}
+.wheel-label:nth-child(even){color:#5a1115}
+.wheel-hub{position:absolute;top:50%;left:50%;z-index:2;width:45px;height:45px;display:grid;place-items:center;border:3px solid #fff0b0;border-radius:50%;background:radial-gradient(circle at 35% 28%,#fff5b4,#e28c23 45%,#891527 85%);box-shadow:0 2px 12px #31060c;font-size:19px;transform:translate(-50%,-50%)}
+.wheel-copy{position:relative;z-index:1}
+.wheel-kicker{color:#f3bd6c;font-size:10px;font-weight:900;letter-spacing:.22em;text-transform:uppercase}
+.wheel-copy h2{margin:4px 0 5px;font:700 clamp(21px,3vw,30px)/1.12 "Playfair Display",serif;color:#fff1ce}
+.wheel-copy p{max-width:510px;margin:0;color:#d4b8ac;font-size:13px;line-height:1.55}
+.free-badge{display:inline-flex;align-items:center;gap:8px;margin-top:13px;padding:8px 12px;border:1px solid #70f1b188;border-radius:12px;background:#0e3c2a;color:#a8ffd1;font-size:12px;font-weight:800;box-shadow:0 0 22px #36ff981f;animation:badgePulse 1.4s ease-in-out infinite}
+.free-badge[hidden]{display:none}
+.free-badge strong{color:#fff;font-size:16px}
+.bonus-note{min-height:17px;margin-top:9px;color:#ffe295;font-size:11px;font-weight:700}
+.machine{padding:16px 18px 17px}
+.machine-top{position:relative;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.machine-title{color:#ffe7ad;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+.machine-title span{color:#ee6671}
+.win-total{text-align:right}
+.win-total span{display:block;color:#be9d97;font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+.win-total b{color:#fff1ab;font-size:19px;font-variant-numeric:tabular-nums;text-shadow:0 0 15px #ffd45b66}
+.paytable{position:relative;display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.pay-chip{padding:4px 8px;border:1px solid #ffd56c33;border-radius:20px;background:#16070bc9;color:#ecd1aa;font-size:10px}
+.pay-chip b{color:#ffdc7f}
+.reels-wrap{position:relative;padding:8px;border:1px solid #ffdc7880;border-radius:17px;background:linear-gradient(145deg,#5c1820,#260b12 48%,#50141b);box-shadow:inset 0 0 26px #0009,0 0 28px #ff36451c}
+.reels-wrap::after{position:absolute;inset:3px;border:1px solid #ffe29935;border-radius:13px;content:"";pointer-events:none}
+.reels-grid{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;isolation:isolate}
+.cell{position:relative;min-width:0;height:clamp(72px,10vw,101px);display:grid;place-items:center;overflow:hidden;border:1px solid #ffe7aa5c;border-radius:12px;background:radial-gradient(circle at 50% 35%,#fff7e21c,#26080e 78%);box-shadow:inset 0 0 16px #0006;transition:transform .2s,border-color .2s,background .2s,box-shadow .2s}
+.cell:nth-child(5n+1),.cell:nth-child(5n){background:radial-gradient(circle at 50% 35%,#fa4a4c24,#23080d 78%)}
+.cell .icon{display:block;font-size:clamp(32px,5.4vw,51px);line-height:1;filter:drop-shadow(0 4px 5px #000a);transition:transform .22s}
+.cell .name{position:absolute;bottom:5px;color:#f4d6a1;font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.cell.spinning .icon{animation:reelBlur .11s linear infinite;filter:blur(1.2px) brightness(1.4)}
+.cell.winner{z-index:1;border-color:#fff3a4;background:radial-gradient(circle,#fff6ad52,#ef9e2140 45%,#5a1017);box-shadow:0 0 25px #ffd84caa,inset 0 0 22px #ffef862b;animation:winCell .65s ease-in-out infinite alternate}
+.cell.winner .icon{transform:scale(1.16);filter:drop-shadow(0 0 13px #ffe46b)}
+.cell.scatter-hit{border-color:#ff8d97;box-shadow:0 0 22px #ff344d99;background:radial-gradient(circle,#ff556354,#3d0c17)}
+.win-lines{position:absolute;inset:0;z-index:2;width:100%;height:100%;overflow:visible;pointer-events:none}
+.controls{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px}
+.bet-control{display:flex;align-items:center;gap:9px}
+.control-label{display:block;margin-bottom:2px;color:#bf9d9a;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.bet-value{min-width:62px;color:#ffdf91;text-align:center;font-size:17px;font-weight:900;font-variant-numeric:tabular-nums}
+.small-btn,.utility-btn{border:1px solid #ffda7866;background:#2a0a11;color:#ffe6ad;cursor:pointer;transition:transform .16s,background .16s,border-color .16s}
+.small-btn{width:34px;height:34px;border-radius:10px;font-size:20px;line-height:1}
+.small-btn:hover:not(:disabled),.utility-btn:hover:not(:disabled){transform:translateY(-2px);border-color:#ffe79e;background:#53131e}
+.small-btn:disabled,.utility-btn:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;align-items:center;gap:8px}
+.spin-btn{position:relative;min-width:144px;min-height:48px;padding:0 24px;overflow:hidden;border:1px solid #fff0a5;border-radius:999px;background:linear-gradient(180deg,#ffdf85,#e99c2e 54%,#b83b27);box-shadow:0 5px 0 #742019,0 10px 24px #e7523233;color:#421014;font-size:15px;font-weight:1000;letter-spacing:.11em;text-transform:uppercase;cursor:pointer;transition:transform .15s,filter .15s}
+.spin-btn::before{position:absolute;top:-30%;left:-55%;width:32%;height:160%;content:"";background:#ffffff70;transform:rotate(22deg);animation:shine 3.4s ease-in-out infinite}
+.spin-btn:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-2px)}
+.spin-btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 #742019}
+.spin-btn:disabled{filter:grayscale(.4);opacity:.65;cursor:wait}
+.spin-btn .spin-icon{margin-right:5px;font-size:18px;vertical-align:-1px}
+.utility-btn{min-height:39px;padding:0 11px;border-radius:11px;font-size:10px;font-weight:800}
+.utility-btn[aria-pressed=true]{border-color:#70f1b1aa;color:#9dffcc}
+.status{min-height:22px;margin:12px 0 0;color:#f4d397;text-align:center;font-size:12px;font-weight:700}
+.status.bonus{color:#9fffc5;text-shadow:0 0 12px #37ff8c77}
+.fine-print{margin:6px 0 0;color:#9f8584;text-align:center;font-size:9px;letter-spacing:.035em}
+.celebration{position:fixed;z-index:10;top:-24px;width:9px;height:15px;border-radius:2px;pointer-events:none;animation:confettiFall var(--duration) cubic-bezier(.15,.55,.35,1) forwards}
+button:focus-visible,a:focus-visible{outline:3px solid #fff1a8;outline-offset:3px}
+@keyframes embers{to{background-position:0 -380px,0 -460px,0 -540px}}
+@keyframes reelBlur{to{transform:translateY(8px) scale(1.08)}}
+@keyframes winCell{to{transform:scale(1.035);filter:brightness(1.25)}}
+@keyframes badgePulse{50%{box-shadow:0 0 30px #36ff9855}}
+@keyframes shine{0%,55%{left:-55%}85%,100%{left:135%}}
+@keyframes confettiFall{to{transform:translate3d(var(--drift),110vh,0) rotate(var(--spin));opacity:.15}}
+@media(max-width:640px){
+  .topbar{width:calc(100% - 22px);padding-top:12px}
+  .brand-mark{width:36px;height:36px;font-size:20px}
+  .brand-name{font-size:14px}.brand-sub{font-size:8px}
+  .wallet{min-width:110px;padding:6px 9px}.wallet b{font-size:15px}.wallet span{font-size:8px}
+  main{width:calc(100% - 18px)}
+  .intro{margin:8px 0 13px}.intro p{max-width:320px;margin:5px auto;font-size:11px}
+  .wheel-card{grid-template-columns:142px 1fr;gap:8px;min-height:172px;padding:10px}
+  .wheel-stage{width:140px;height:140px}
+  .wheel{--wheel-label-offset:-49px;width:132px;height:132px;border-width:4px}
+  .wheel-label{width:52px;margin-left:-26px;font-size:7px}
+  .wheel-hub{width:34px;height:34px;font-size:15px}
+  .pointer{border-left-width:11px;border-right-width:11px;border-top-width:22px}
+  .wheel-copy p{font-size:11px}.wheel-copy h2{font-size:20px}
+  .free-badge{gap:5px;margin-top:8px;padding:6px 8px;font-size:10px}
+  .machine{padding:11px 9px 12px;border-radius:18px}
+  .machine-top{margin-bottom:8px}.machine-title{font-size:10px}.win-total b{font-size:16px}
+  .paytable{gap:4px;margin-bottom:8px}.pay-chip{padding:4px 6px;font-size:8px}
+  .reels-wrap{padding:5px;border-radius:13px}.reels-grid{gap:4px}
+  .cell{height:clamp(64px,18vw,86px);border-radius:8px}
+  .cell .icon{font-size:clamp(28px,9vw,42px)}.cell .name{bottom:3px;font-size:6px}
+  .controls{flex-wrap:wrap;justify-content:center;gap:10px}
+  .bet-control{margin-right:auto}.actions{margin-left:auto}
+  .spin-btn{min-width:120px;min-height:44px;padding:0 16px;font-size:13px}
+  .utility-btn{min-height:35px;padding:0 8px;font-size:9px}
+}
+@media(max-width:390px){.brand-sub{letter-spacing:.1em}.wallet{min-width:98px}.wheel-card{grid-template-columns:125px 1fr;padding:8px}.wheel-stage{width:124px;height:124px}.wheel{--wheel-label-offset:-42px;width:116px;height:116px}.wheel-label{transform-origin:50% 8px}.wheel-copy h2{font-size:18px}.wheel-copy p{font-size:10px}.actions{gap:5px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="back-link" href="lobby.html" aria-label="Volver al salón de juegos">← <span>Salón de juegos</span></a>
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">🐉</div>
+    <div><div class="brand-name">FORTUNA CHINA</div><span class="brand-sub">Templo de la suerte</span></div>
+  </div>
+  <div class="wallet"><span>Saldo compartido</span><b id="credits">—</b></div>
+</header>
+
+<main>
+  <section class="intro" aria-labelledby="page-title">
+    <div class="eyebrow">Año del dragón · Edición dorada</div>
+    <h1 id="page-title">Fortuna China</h1>
+    <p>Enciende los carretes, despierta al dragón y deja que la fortuna decida.</p>
+    <div class="practice-tag"><i></i> CUENTA DEL SERVIDOR · SALDO COMPARTIDO</div>
+  </section>
+
+  <section class="wheel-card" aria-labelledby="wheel-title">
+    <div class="wheel-stage" aria-label="Ruleta de premios de giros gratis">
+      <div class="pointer" aria-hidden="true"></div>
+      <div class="wheel" id="wheel" role="img" aria-label="Ruleta de bonificaciones">
+        <span class="wheel-label">5 GIROS</span><span class="wheel-label">8 GIROS</span>
+        <span class="wheel-label">x2 · 5</span><span class="wheel-label">10 GIROS</span>
+        <span class="wheel-label">x3 · 5</span><span class="wheel-label">12 GIROS</span>
+        <span class="wheel-label">x2 · 8</span><span class="wheel-label">DRAGÓN x3</span>
+        <div class="wheel-hub" aria-hidden="true">🐲</div>
+      </div>
+    </div>
+    <div class="wheel-copy">
+      <div class="wheel-kicker">✦ Bonificación especial ✦</div>
+      <h2 id="wheel-title">La ruleta del dragón</h2>
+      <p>Consigue 3 talismanes en cualquier lugar de los carretes y la ruleta del servidor te otorgará giros gratis con multiplicadores.</p>
+      <div class="free-badge" id="freeBadge" hidden>🎁 <strong id="freeCount">0</strong> giros gratis <span id="freeMultiplier"></span></div>
+      <div class="bonus-note" id="bonusNote" aria-live="polite">La suerte aguarda entre los símbolos…</div>
+    </div>
+  </section>
+
+  <section class="machine" aria-label="Tragamonedas Fortuna China">
+    <div class="machine-top">
+      <div class="machine-title"><span>✦</span> Cinco carretes · Cinco caminos</div>
+      <div class="win-total"><span>Premio de esta ronda</span><b id="winAmount">0</b></div>
+    </div>
+    <div class="paytable" aria-label="Premios aproximados por símbolo">
+      <span class="pay-chip">🐉 Dragón <b>×12</b></span>
+      <span class="pay-chip">🧧 Sobre rojo <b>×8</b></span>
+      <span class="pay-chip">🪙 Monedas <b>×5</b></span>
+      <span class="pay-chip">🎐 3 talismanes <b>Ruleta</b></span>
+    </div>
+    <div class="reels-wrap"><div class="reels-grid" id="reels" aria-label="Resultado de los cinco carretes"></div></div>
+    <div class="controls">
+      <div class="bet-control">
+        <div><span class="control-label">Apuesta virtual</span><div class="bet-value" id="betValue">100</div></div>
+        <button class="small-btn" id="betDown" type="button" aria-label="Bajar apuesta">−</button>
+        <button class="small-btn" id="betUp" type="button" aria-label="Subir apuesta">+</button>
+      </div>
+      <div class="actions">
+        <button class="utility-btn" id="autoBtn" type="button" aria-pressed="false">AUTO ×10</button>
+        <button class="utility-btn" id="soundBtn" type="button" aria-pressed="true">🔊 SONIDO</button>
+        <button class="spin-btn" id="spinBtn" type="button"><span class="spin-icon">✦</span> GIRAR</button>
+      </div>
+    </div>
+    <p class="status" id="status" role="status" aria-live="polite">¡Tu aventura empieza con 10.000 créditos gratis!</p>
+    <p class="fine-print">Los créditos los calcula el servidor y son los mismos en los tres juegos.</p>
+  </section>
+</main>
+
+<script src="casino.js"></script>
+<script>
+(() => {
+  const symbols = [
+    {icon:'🐉',name:'Dragón',weight:8,pays:[0,0,12,30,90,300]},
+    {icon:'🧧',name:'Fortuna',weight:13,pays:[0,0,8,20,60,180]},
+    {icon:'🪙',name:'Monedas',weight:17,pays:[0,0,5,12,35,100]},
+    {icon:'🏮',name:'Farol',weight:19,pays:[0,0,3,8,22,70]},
+    {icon:'🐼',name:'Panda',weight:18,pays:[0,0,2,6,18,55]},
+    {icon:'🍊',name:'Naranja',weight:15,pays:[0,0,1.5,4,12,35]},
+    {icon:'🧨',name:'Petardo',weight:10,pays:[0,0,1,3,9,25]},
+    {icon:'🎐',name:'Suerte',weight:7,pays:[0,0,0,0,0,0],scatter:true}
+  ];
+  const bonusPrizes = [
+    {label:'5 GIROS',spins:5,multiplier:1},
+    {label:'8 GIROS',spins:8,multiplier:1},
+    {label:'x2 · 5',spins:5,multiplier:2},
+    {label:'10 GIROS',spins:10,multiplier:1},
+    {label:'x3 · 5',spins:5,multiplier:3},
+    {label:'12 GIROS',spins:12,multiplier:1},
+    {label:'x2 · 8',spins:8,multiplier:2},
+    {label:'DRAGÓN x3',spins:10,multiplier:3}
+  ];
+  const paylines = [
+    [1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2]
+  ];
+  const bets = [200,500,1000,2000,5000];
+  const reelEl = document.getElementById('reels');
+  const creditsEl = document.getElementById('credits');
+  const betEl = document.getElementById('betValue');
+  const spinBtn = document.getElementById('spinBtn');
+  const statusEl = document.getElementById('status');
+  const wheel = document.getElementById('wheel');
+  const freeBadge = document.getElementById('freeBadge');
+  const freeCount = document.getElementById('freeCount');
+  const freeMultiplier = document.getElementById('freeMultiplier');
+  const bonusNote = document.getElementById('bonusNote');
+  const winAmount = document.getElementById('winAmount');
+  let credits = 0;
+  let unlimitedCredits = false;
+  let betIndex = 0;
+  let freeSpins = 0;
+  let freeSpinMultiplier = 1;
+  let wheelRotation = 0;
+  let busy = false;
+  let autoRemaining = 0;
+  let autoTimer;
+  let soundOn = true;
+  let audioContext;
+
+  function format(value) {
+    return Math.round(value).toLocaleString('es-CL');
+  }
+  function status(message, bonus = false) {
+    statusEl.textContent = message;
+    statusEl.classList.toggle('bonus', bonus);
+  }
+  function updateHud() {
+    creditsEl.textContent = unlimitedCredits ? '∞' : format(credits);
+    betEl.textContent = format(bets[betIndex]);
+    freeCount.textContent = freeSpins;
+    freeMultiplier.textContent = freeSpinMultiplier > 1 ? ` · premio ×${freeSpinMultiplier}` : '';
+    freeBadge.hidden = freeSpins === 0;
+    spinBtn.disabled = busy || autoRemaining > 0 || (!unlimitedCredits && freeSpins === 0 && credits < bets[betIndex]);
+    spinBtn.innerHTML = freeSpins > 0
+      ? `<span class="spin-icon">🎁</span> GRATIS ×${freeSpins}`
+      : '<span class="spin-icon">✦</span> GIRAR';
+    document.getElementById('betDown').disabled = busy || betIndex === 0;
+    document.getElementById('betUp').disabled = busy || betIndex === bets.length - 1;
+    document.getElementById('autoBtn').disabled = busy;
+  }
+  function chooseSymbol() {
+    const weighted = symbols.filter(symbol => symbol.weight > 0);
+    const total = weighted.reduce((sum, symbol) => sum + symbol.weight, 0);
+    let roll = Math.random() * total;
+    for (const symbol of weighted) {
+      roll -= symbol.weight;
+      if (roll < 0) return symbol;
+    }
+    return weighted[0];
+  }
+  function createGrid() {
+    return Array.from({length:5}, () => Array.from({length:3}, chooseSymbol));
+  }
+  function renderGrid(grid) {
+    reelEl.replaceChildren();
+    for (let row = 0; row < 3; row++) {
+      for (let column = 0; column < 5; column++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.column = column;
+        cell.dataset.row = row;
+        cell.innerHTML = `<span class="icon">${grid[column][row].icon}</span><span class="name">${grid[column][row].name}</span>`;
+        reelEl.append(cell);
+      }
+    }
+  }
+  function rollColumn(column) {
+    for (let row = 0; row < 3; row++) {
+      const cell = reelEl.querySelector(`[data-column="${column}"][data-row="${row}"]`);
+      cell.classList.add('spinning');
+      const symbol = chooseSymbol();
+      cell.querySelector('.icon').textContent = symbol.icon;
+      cell.querySelector('.name').textContent = symbol.name;
+    }
+  }
+  function revealColumn(grid, column) {
+    for (let row = 0; row < 3; row++) {
+      const cell = reelEl.querySelector(`[data-column="${column}"][data-row="${row}"]`);
+      cell.classList.remove('spinning');
+      cell.querySelector('.icon').textContent = grid[column][row].icon;
+      cell.querySelector('.name').textContent = grid[column][row].name;
+    }
+    tone(380 + column * 85, .11, 'triangle', .06);
+  }
+  function winningLines(grid) {
+    const wins = [];
+    for (const [lineIndex, pattern] of paylines.entries()) {
+      const first = grid[0][pattern[0]];
+      if (first.scatter) continue;
+      let count = 1;
+      while (count < 5 && grid[count][pattern[count]] === first) count++;
+      if (count >= 3) {
+        const multiplier = first.pays[count];
+        wins.push({lineIndex, pattern, count, amount: bets[betIndex] * multiplier});
+      }
+    }
+    return wins;
+  }
+  function highlightWins(wins) {
+    for (const win of wins) {
+      for (let column = 0; column < win.count; column++) {
+        reelEl.querySelector(`[data-column="${column}"][data-row="${win.pattern[column]}"]`).classList.add('winner');
+      }
+    }
+  }
+  function delay(ms) {
+    return new Promise(resolve => window.setTimeout(resolve, ms));
+  }
+  function setupAudio() {
+    if (!audioContext) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) audioContext = new AudioContextClass();
+    }
+    if (audioContext?.state === 'suspended') audioContext.resume();
+  }
+  function tone(frequency, duration = .12, type = 'sine', volume = .05, start = 0) {
+    if (!soundOn || !audioContext) return;
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    const time = audioContext.currentTime + start;
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, time);
+    gain.gain.setValueAtTime(volume, time);
+    gain.gain.exponentialRampToValueAtTime(.001, time + duration);
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    oscillator.start(time);
+    oscillator.stop(time + duration);
+  }
+  function playWinSound(big = false) {
+    [523,659,784,1047,1319].slice(0, big ? 5 : 3).forEach((frequency, index) => {
+      tone(frequency, .36, 'triangle', .075, index * .09);
+      tone(frequency * 2, .24, 'sine', .025, index * .09);
+    });
+  }
+  function celebrate(big) {
+    const colors = ['#ffe47c','#ff5262','#54e5a5','#fff5dc','#f39736'];
+    const amount = big ? 90 : 38;
+    for (let i = 0; i < amount; i++) {
+      const piece = document.createElement('i');
+      piece.className = 'celebration';
+      piece.style.left = `${Math.random() * 100}vw`;
+      piece.style.background = colors[i % colors.length];
+      piece.style.setProperty('--drift', `${Math.random() * 240 - 120}px`);
+      piece.style.setProperty('--spin', `${Math.random() * 900 - 450}deg`);
+      piece.style.setProperty('--duration', `${1.3 + Math.random() * 1.4}s`);
+      document.body.append(piece);
+      window.setTimeout(() => piece.remove(), 3000);
+    }
+  }
+  async function spinWheel(prizeIndex, spins, multiplier) {
+    const prize = bonusPrizes[prizeIndex];
+    const alignment = (360 - ((wheelRotation + prizeIndex * 45) % 360)) % 360;
+    wheelRotation += 360 * 6 + alignment;
+    wheel.style.transform = `rotate(${wheelRotation}deg)`;
+    bonusNote.textContent = '¡El dragón gira la rueda! Descubriendo tu premio…';
+    tone(220,.45,'sawtooth',.045);
+    await delay(4750);
+    bonusNote.textContent = `¡${prize.label}! Ganaste ${spins} giros gratis.`;
+    status(`¡BONIFICACIÓN! La ruleta te regaló ${spins} giros gratis${multiplier > 1 ? ` con premio ×${multiplier}` : ''}.`, true);
+    tone(660,.6,'triangle',.1);
+    tone(990,.7,'sine',.055,.16);
+    celebrate(true);
+    updateHud();
+  }
+  async function spin() {
+    if (busy) return;
+    const isFreeSpin = freeSpins > 0;
+    const currentBet = bets[betIndex];
+    if (!isFreeSpin && !unlimitedCredits && credits < currentBet) {
+      if (autoRemaining > 0) {
+        autoRemaining = 0;
+        const autoButton = document.getElementById('autoBtn');
+        autoButton.setAttribute('aria-pressed','false');
+        autoButton.textContent = 'AUTO ×10';
+      }
+      status('Saldo insuficiente. Vuelve al salón para consultar el saldo.');
+      return;
+    }
+    busy = true;
+    setupAudio();
+    const previewGrid = createGrid();
+    renderGrid(previewGrid);
+    winAmount.textContent = '0';
+    status(isFreeSpin ? `¡Giro gratis! Premio multiplicado ×${freeSpinMultiplier}.` : '¡Que comience la fortuna!');
+    updateHud();
+    tone(130,.4,'sawtooth',.065);
+    let result;
+    try {
+      result = await CasinoAuth.api('/game/play', {
+        method:'POST',
+        body:JSON.stringify({game_type:'slot',game_name:'Fortuna China',bet_amount:currentBet})
+      });
+    } catch (error) {
+      busy = false;
+      autoRemaining = 0;
+      document.getElementById('autoBtn').setAttribute('aria-pressed','false');
+      document.getElementById('autoBtn').textContent = 'AUTO ×10';
+      status(error.message, true);
+      updateHud();
+      return;
+    }
+    credits = result.new_user_balance;
+    unlimitedCredits = result.unlimited_credits;
+    freeSpins = result.free_spins;
+    freeSpinMultiplier = result.free_spin_multiplier;
+    const grid = result.grid.map(column => column.map(symbolId => symbols[symbolId]));
+    const actualBet = result.bet_amount;
+    const wins = result.wins.map(item => ({
+      lineIndex:item.line,
+      pattern:paylines[item.line],
+      count:item.count,
+      amount:item.payout
+    }));
+    for (let column = 0; column < 5; column++) {
+      const started = Date.now();
+      const ticker = window.setInterval(() => rollColumn(column), 75);
+      await delay(560 + column * 240);
+      window.clearInterval(ticker);
+      revealColumn(grid, column);
+      const remaining = Math.max(0, 80 - (Date.now() - started));
+      if (remaining) await delay(remaining);
+    }
+    const prize = result.payout_amount;
+    const scatterCount = grid.flat().filter(symbol => symbol.scatter).length;
+    if (wins.length) {
+      winAmount.textContent = format(prize);
+      highlightWins(wins);
+      const bigWin = prize >= actualBet * 10;
+      status(`${bigWin ? '¡FORTUNA LEGENDARIA!' : '¡COMBINACIÓN GANADORA!'} +${format(prize)} créditos`, true);
+      playWinSound(bigWin);
+      celebrate(bigWin);
+      if (bigWin) reelEl.animate([{transform:'scale(1)'},{transform:'scale(1.025)'},{transform:'scale(1)'}],{duration:480,iterations:2});
+    } else {
+      status(isFreeSpin ? 'El giro gratis terminó. ¡La suerte sigue en juego!' : 'Los faroles aún guardan su secreto. ¡Prueba otra vez!');
+    }
+    if (scatterCount >= 3) {
+      document.querySelectorAll('.cell').forEach(cell => {
+        if (symbols.find(symbol => symbol.icon === cell.querySelector('.icon').textContent)?.scatter) cell.classList.add('scatter-hit');
+      });
+      status(`¡${scatterCount} símbolos de la suerte! ¡Se activa la ruleta!`, true);
+      tone(330,.55,'square',.065);
+      await delay(350);
+      await spinWheel(result.bonus_prize_index,result.bonus_spins_added,result.free_spin_multiplier);
+    } else {
+      bonusNote.textContent = 'La suerte aguarda entre los símbolos…';
+    }
+    updateHud();
+    busy = false;
+    updateHud();
+    if (autoRemaining > 0) {
+      autoRemaining--;
+      if (autoRemaining === 0) {
+        document.getElementById('autoBtn').setAttribute('aria-pressed','false');
+        document.getElementById('autoBtn').textContent = 'AUTO ×10';
+      } else {
+        autoTimer = window.setTimeout(spin, 700);
+      }
+      updateHud();
+    }
+  }
+  function toggleAuto() {
+    if (busy) return;
+    const button = document.getElementById('autoBtn');
+    if (autoRemaining > 0) {
+      autoRemaining = 0;
+      window.clearTimeout(autoTimer);
+      button.setAttribute('aria-pressed','false');
+      button.textContent = 'AUTO ×10';
+      status('Secuencia automática cancelada.');
+      updateHud();
+      return;
+    }
+    autoRemaining = 10;
+    button.setAttribute('aria-pressed','true');
+    button.textContent = 'PARAR AUTO';
+    spin();
+  }
+  async function init() {
+    wheel.querySelectorAll('.wheel-label').forEach((label, index) => {
+      label.style.transform = `rotate(${index * 45}deg) translateY(var(--wheel-label-offset))`;
+    });
+    renderGrid(createGrid());
+    document.getElementById('betDown').addEventListener('click', () => { betIndex = Math.max(0, betIndex - 1); updateHud(); });
+    document.getElementById('betUp').addEventListener('click', () => { betIndex = Math.min(bets.length - 1, betIndex + 1); updateHud(); });
+    spinBtn.addEventListener('click', spin);
+    document.getElementById('autoBtn').addEventListener('click', toggleAuto);
+    document.getElementById('soundBtn').addEventListener('click', event => {
+      soundOn = !soundOn;
+      event.currentTarget.setAttribute('aria-pressed',String(soundOn));
+      event.currentTarget.textContent = soundOn ? '🔊 SONIDO' : '🔇 SILENCIO';
+      if (soundOn) { setupAudio(); tone(660,.12,'sine',.05); }
+    });
+    spinBtn.disabled = true;
+    updateHud();
+    try {
+      const user = await CasinoAuth.requireSession();
+      if (!user) return;
+      credits = user.balance;
+      unlimitedCredits = user.unlimited_credits;
+      freeSpins = user.free_spins;
+      freeSpinMultiplier = user.free_spin_multiplier;
+      status(`Sesión de ${user.username}. Saldo sincronizado con el servidor.`);
+      updateHud();
+    } catch (error) {
+      status(error.message,true);
+    }
+  }
+  init();
+})();
+</script>
+</body>
+</html>
